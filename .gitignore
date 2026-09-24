@@ -1,7 +1,4 @@
-# node依赖包
 charity-api/node_modules/
 node_modules/
-# 日志
 *.log
-# 环境变量
 .env
