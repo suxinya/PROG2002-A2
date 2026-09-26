@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Detail | Charity Events</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="search.html">Search Events</a></li>
+            <li><a href="create-event.html">Create Event</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Event Details</h1>
+        <div id="errorBox"></div>
+        <div id="detailContent"></div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:3000/api";
+        const detailContentDiv = document.getElementById("detailContent");
+        const errorBox = document.getElementById("errorBox");
+
+        function showError(message){
+            errorBox.innerHTML = `<p class="error-message">${message}</p>`;
+        }
+
+        // Retrieve the event_id parameter from the URL
+        const params = new URLSearchParams(window.location.search);
+        const eventId = params.get('id');
+
+        async function loadEventDetail(){
+            if(!eventId){
+                showError("No event ID found in URL");
+                return;
+            }
+            try{
+                const res = await fetch(`${API_BASE}/events/${eventId}`);
+                if(!res.ok) throw new Error("Cannot fetch event data");
+                const event = await res.json();
+
+                detailContentDiv.innerHTML = `
+                    <div class="event-detail-card">
+                        <h2>${event.event_name}</h2>
+                        <p><strong>Location:</strong> ${event.location}</p>
+                        <p><strong>Date:</strong> ${event.event_date}</p>
+                        <p><strong>Status:</strong> ${event.status}</p>
+                        <h3>Description</h3>
+                        <p>${event.description}</p>
+                    </div>
+                    <br>
+                    <a href="index.html"><button>Back to Home</button></a>
+                `
+            }catch(err){
+                showError("Failed to load event detail: " + err.message);
+            }
+        }
+        window.onload = loadEventDetail;
+    </script>
+</body>
+</html>

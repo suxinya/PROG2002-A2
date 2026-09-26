@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create New Event | Charity Events</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="search.html">Search Events</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Create New Charity Event</h1>
+        <div id="errorBox"></div>
+        <div id="successMsg"></div>
+        <form id="eventForm">
+            <label>Event Name *</label>
+            <input type="text" name="event_name" required>
+
+            <label>Location *</label>
+            <input type="text" name="location" required>
+
+            <label>Event Date *</label>
+            <input type="date" name="event_date" required>
+
+            <label>Description *</label>
+            <textarea name="description" rows="5" required></textarea>
+
+            <label>Category ID</label>
+            <input type="number" name="category_id" value="1">
+
+            <label>Organisation ID</label>
+            <input type="number" name="org_id" value="1">
+
+            <label>Event Status</label>
+            <select name="status">
+                <option value="active">active</option>
+                <option value="ended">ended</option>
+                <option value="disabled">disabled</option>
+            </select>
+
+            <button type="submit">Submit New Event</button>
+        </form>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:3000/api";
+        const form = document.getElementById("eventForm");
+        const errorBox = document.getElementById("errorBox");
+        const successMsg = document.getElementById("successMsg");
+
+        function showError(message){
+            errorBox.innerHTML = `<p class="error-message">${message}</p>`;
+            successMsg.innerHTML = "";
+        }
+        function showSuccess(message){
+            successMsg.innerHTML = `<p style="color:green">${message}</p>`;
+            errorBox.innerHTML = "";
+        }
+
+        form.addEventListener('submit', async function(e){
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            try{
+                const res = await fetch(`${API_BASE}/events`,{
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                const result = await res.json();
+                if(!res.ok){
+                    throw new Error(result.message || "Submit failed");
+                }
+                showSuccess("Event created successfully!");
+                form.reset();
+                //Automatically jump back to the homepage after 2 seconds
+                setTimeout(()=>{
+                    window.location.href = "index.html";
+                },2000)
+            }catch(err){
+                showError("Error: " + err.message);
+            }
+        })
+    </script>
+</body>
+</html>

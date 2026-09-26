@@ -333,7 +333,6 @@ footer {
 /* ============================================================
    HopeBridge Foundation - Shared Stylesheet
    ============================================================ */
-
 :root {
     --primary: #2c6e49;
     --primary-dark: #1e4d33;
@@ -657,4 +656,8 @@ footer {
     nav ul { gap: 0.5rem; }
     .event-grid { grid-template-columns: 1fr; }
     .form-row { flex-direction: column; }
+}
+
+.event-card{
+    cursor: pointer;
 }
