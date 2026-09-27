@@ -67,3 +67,18 @@ app.post('/api/events', async (req, res) => {
     res.status(500).json({message:"Addition failed"})
   }
 })
+
+// Delete activity interface
+app.delete('/api/events/:id', async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const [result] = await db.query('DELETE FROM events WHERE event_id = ?', [eventId]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({message: "Event not found"});
+    }
+    res.json({success:true, message:"Event deleted successfully"});
+  } catch(err) {
+    console.log(err);
+    res.status(500).json({message:"Delete failed", error:err});
+  }
+})

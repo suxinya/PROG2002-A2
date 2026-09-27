@@ -2,32 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Event Detail | Charity Events</title>
+    <title>Event Detail</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="search.html">Search Events</a></li>
-            <li><a href="create-event.html">Create Event</a></li>
-        </ul>
+        <a href="index.html">Home</a>
+        <a href="create-event.html">Create New Event</a>
     </nav>
     <div class="container">
-        <h1>Event Details</h1>
         <div id="errorBox"></div>
         <div id="detailContent"></div>
+        <h1>Event Details</h1>
+        <p>Event Name: <span id="eventName"></span></p>
+        <p>Category: <span id="category"></span></p>
+        <p>Location: <span id="location"></span></p>
+        <p>Date: <span id="eventDate"></span></p>
+        <p>Description: <span id="description"></span></p>
+        <p>Status: <span id="status"></span></p>
+        <button id="deleteBtn">Delete This Event</button>
     </div>
-
     <script>
         const API_BASE = "http://localhost:3000/api";
         const detailContentDiv = document.getElementById("detailContent");
         const errorBox = document.getElementById("errorBox");
-
         function showError(message){
             errorBox.innerHTML = `<p class="error-message">${message}</p>`;
         }
-
         // Retrieve the event_id parameter from the URL
         const params = new URLSearchParams(window.location.search);
         const eventId = params.get('id');
@@ -41,24 +42,35 @@
                 const res = await fetch(`${API_BASE}/events/${eventId}`);
                 if(!res.ok) throw new Error("Cannot fetch event data");
                 const event = await res.json();
-
-                detailContentDiv.innerHTML = `
-                    <div class="event-detail-card">
-                        <h2>${event.event_name}</h2>
-                        <p><strong>Location:</strong> ${event.location}</p>
-                        <p><strong>Date:</strong> ${event.event_date}</p>
-                        <p><strong>Status:</strong> ${event.status}</p>
-                        <h3>Description</h3>
-                        <p>${event.description}</p>
-                    </div>
-                    <br>
-                    <a href="index.html"><button>Back to Home</button></a>
-                `
+                // Render page content, fill data into html elements
+                document.getElementById("eventName").innerText = event.event_name;
+                document.getElementById("category").innerText = event.category;
+                document.getElementById("location").innerText = event.location;
+                document.getElementById("eventDate").innerText = event.event_date;
+                document.getElementById("description").innerText = event.description;
+                document.getElementById("status").innerText = event.status;
             }catch(err){
                 showError("Failed to load event detail: " + err.message);
             }
         }
         window.onload = loadEventDetail;
+
+        // Delete button click event
+        document.getElementById("deleteBtn").addEventListener('click',async ()=>{
+            if(!confirm("Are you sure to delete this public welfare activity?")) return;
+            const res = await fetch(`${API_BASE}/events/${eventId}`,{
+                method:"DELETE"
+            });
+            const data = await res.json();
+            if(data.success){
+                alert("Successfully deleted!");
+                window.location.href="index.html";
+            }else{
+                alert("Failed to delete event!");
+            }
+        })
+        //Page loading automatic execution
+        loadEventDetail();
     </script>
 </body>
 </html>
