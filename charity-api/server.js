@@ -24,10 +24,6 @@ app.use(express.static("public"));
 app.use(cors());
 app.use('/api', apiRoutes);
 
-app.listen(PORT, ()=>{
-    console.log(`✅ Server running at http://localhost:${PORT}`);
-})
-
 //Get single event details interface
 app.get('/api/events/:id', async (req, res) => {
   const eventId = req.params.id;
@@ -81,4 +77,48 @@ app.delete('/api/events/:id', async (req, res) => {
     console.log(err);
     res.status(500).json({message:"Delete failed", error:err});
   }
+})
+
+// Get a complete list of categories for the search page dropdown menu
+app.get('/api/categories', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT category_id, category_name FROM categories');
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({message:"Fetch categories failed"});
+  }
+});
+
+//Multi condition combination filtering interface: location, date, category ID
+app.get('/api/events/filter', async (req, res) => {
+  try {
+    const { location, event_date, category_id } = req.query;
+    let sql = "SELECT * FROM events WHERE 1=1 ";
+    let params = [];
+
+    if(location && location.trim() !== ""){
+      sql += " AND location LIKE ? ";
+      params.push(`%${location.trim()}%`);
+    }
+    if(event_date && event_date.trim() !== ""){
+      sql += " AND DATE(event_date) = ? ";
+      params.push(event_date);
+    }
+    if(category_id && category_id !== ""){
+      sql += " AND category_id = ? ";
+      params.push(category_id);
+    }
+
+    const [results] = await db.query(sql, params);
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({message:"Filter query error"});
+  }
+});
+
+
+app.listen(PORT, ()=>{
+    console.log(`✅ Server running at http://localhost:${PORT}`);
 })

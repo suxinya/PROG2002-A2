@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Events</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .filter-area{
+            margin:20px 0;
+            padding:16px;
+            border:1px solid #ccc;
+            border-radius:6px;
+        }
+        .filter-item{
+            margin:10px 0;
+        }
+        label{
+            display:inline-block;
+            width:120px;
+        }
+        button{
+            padding:7px 14px;
+            margin-right:10px;
+        }
+        #resultBox{
+            margin-top:20px;
+        }
+        .no-match{
+            color:#666;
+            font-size:16px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="search.html">Search Events</a></li>
+            <li><a href="create-event.html">Create Event</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Search Charity Events</h1>
+
+        <div class="filter-area">
+            <div class="filter-item">
+                <label>Location:</label>
+                <input type="text" id="inputLocation" placeholder="Search by event name or location">
+            </div>
+            <div class="filter-item">
+                <label>Event Date:</label>
+                <input type="date" id="inputDate">
+            </div>
+            <div class="filter-item">
+                <label>Category:</label>
+                <select id="selectCategory">
+                    <option value="">--All Categories--</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <button id="btnSearch">Search</button>
+                <button id="btnClear">Clear</button>
+            </div>
+        </div>
+
+        <div id="errorBox"></div>
+        <div id="resultBox"></div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:3000/api";
+        const selectCategory = document.getElementById("selectCategory");
+        const inputLocation = document.getElementById("inputLocation");
+        const inputDate = document.getElementById("inputDate");
+        const btnSearch = document.getElementById("btnSearch");
+        const btnClear = document.getElementById("btnClear");
+        const resultBox = document.getElementById("resultBox");
+        const errorBox = document.getElementById("errorBox");
+
+        let allEvents = []; // 存储全部活动数据，前端筛选用
+
+        function showError(msg){
+            errorBox.innerHTML = `<p style="color:red">${msg}</p>`;
+        }
+        function clearError(){
+            errorBox.innerHTML = "";
+        }
+
+        // 加载所有活动（一次性获取全部数据）
+        async function loadAllEventData(){
+            try{
+                const res = await fetch(`${API_BASE}/events`);
+                if(!res.ok) throw new Error("Cannot load events");
+                allEvents = await res.json();
+            }catch(err){
+                showError("Load events failed: " + err.message);
+            }
+        }
+
+        //页面加载：加载分类下拉列表
+        async function loadCategoryOptions(){
+            try{
+                const res = await fetch(`${API_BASE}/categories`);
+                if(!res.ok) throw new Error("Cannot load categories");
+                const catList = await res.json();
+                catList.forEach(cat=>{
+                    const opt = document.createElement('option');
+                    opt.value = cat.category_id;
+                    opt.textContent = cat.category_name;
+                    selectCategory.appendChild(opt);
+                })
+            }catch(err){
+                showError("Load category failed: " + err.message);
+            }
+        }
+
+        //渲染结果
+        function renderResult(events){
+            resultBox.innerHTML = "";
+            if(events.length === 0){
+                resultBox.innerHTML = `<p class="no-match">No events match...</p>`;
+                return;
+            }
+            events.forEach(event=>{
+                const card = document.createElement("div");
+                card.className = "event-card";
+                card.innerHTML = `
+                    <h3>${event.event_name}</h3>
+                    <p>Location: ${event.location}</p>
+                    <p>Date: ${event.event_date}</p>
+                    <p>Status: ${event.status}</p>
+                    <a href="event-detail.html?id=${event.id}">View Details</a>
+                `;
+                resultBox.appendChild(card);
+            })
+        }
+
+// 前端本地筛选逻辑
+function doSearch(){
+    clearError();
+    const keywordVal = inputLocation.value.trim().toLowerCase();
+    const dateVal = inputDate.value;
+    const catVal = selectCategory.value;
+
+    const filtered = allEvents.filter(event=>{
+        // 关键词：匹配【活动名称】OR【地点】
+        if(keywordVal){
+            const nameMatch = event.event_name.toLowerCase().includes(keywordVal);
+            const locMatch = event.location.toLowerCase().includes(keywordVal);
+            if(!nameMatch && !locMatch){
+                return false;
+            }
+        }
+
+        // 日期筛选：截取前10位 yyyy‑MM‑dd
+        if(dateVal){
+            const eventDay = event.event_date.substring(0,10);
+            if(eventDay !== dateVal){
+                return false;
+            }
+        }
+
+        // 分类筛选
+        if(catVal && event.category_id != catVal){
+            return false;
+        }
+
+        return true;
+    })
+    renderResult(filtered);
+}
+
+        //清空全部条件和结果 DOM操作
+        function clearAll(){
+            inputLocation.value = "";
+            inputDate.value = "";
+            selectCategory.value = "";
+            resultBox.innerHTML = "";
+            clearError();
+        }
+
+        //绑定按钮
+        btnSearch.addEventListener("click", doSearch);
+        btnClear.addEventListener("click", clearAll);
+
+        window.onload = async function(){
+            await loadAllEventData();
+            await loadCategoryOptions();
+        }
+    </script>
+</body>
+</html>
