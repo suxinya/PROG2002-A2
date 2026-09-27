@@ -13,14 +13,19 @@
     <div class="container">
         <div id="errorBox"></div>
         <div id="detailContent"></div>
-        <h1>Event Details</h1>
-        <p>Event Name: <span id="eventName"></span></p>
-        <p>Category: <span id="category"></span></p>
-        <p>Location: <span id="location"></span></p>
-        <p>Date: <span id="eventDate"></span></p>
-        <p>Description: <span id="description"></span></p>
-        <p>Status: <span id="status"></span></p>
-        <button id="deleteBtn">Delete This Event</button>
+        <div class="form-box">
+            <h1>Event Details</h1>
+            <p>Event Name: <span id="eventName"></span></p>
+            <p>Category: <span id="category"></span></p>
+            <p>Location: <span id="location"></span></p>
+            <p>Date: <span id="eventDate"></span></p>
+            <p>Description: <span id="description"></span></p>
+            <p>Status: <span id="status"></span></p>
+            <button id="deleteBtn">Delete This Event</button>
+            <button onclick="window.location.href='index.html'">Back to Home</button>
+            <button id="registerBtn" style="margin-right:12px;">Register / Sign Up</button>
+        `;
+        </div>
     </div>
     <script>
         const API_BASE = "http://localhost:3000/api";
@@ -69,6 +74,12 @@
                 alert("Failed to delete event!");
             }
         })
+
+        // Register button click event
+        document.getElementById('registerBtn').addEventListener('click', function(){
+            alert("This feature is currently under development.");
+        });
+
         //Page loading automatic execution
         loadEventDetail();
     </script>
